@@ -8,3 +8,7 @@ Backend REST for the Finca Verde Inmobiliaria web platform
 - Spring Data JPA
 - PostgreSQL
 - Swagger / OpenAPI
+
+## Run
+
+mvn spring-boot:run
