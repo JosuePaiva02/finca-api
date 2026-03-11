@@ -1,14 +1,13 @@
 package com.finca.api.properties.domain.model.aggregates;
 
-
+import com.finca.api.properties.domain.model.entities.PropertyImage;
 import com.finca.api.properties.domain.model.valueobjects.*;
 import com.finca.api.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import java.time.LocalDateTime;
-import java.util.Objects;
-
+import java.util.*;
 
 @Getter
 @Entity
@@ -50,10 +49,14 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
     @Column(name = "published_at")
     private LocalDateTime publishedAt;
 
-
     @Column(name = "status_type", nullable = false)
     @Enumerated(EnumType.STRING)
     private EStatusType statusType;
+
+
+    // Relation between Property and PropertyImage with cascade and orphan removal
+    @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
+    private final List<PropertyImage> images = new ArrayList<>();
 
     // Empty constructor for JPA
     protected Property() {
@@ -62,7 +65,7 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
     // Creation constructor with business rules validations
     public Property(String title, Double price, String district, String address,
                     EPropertyType propertyType, EOperationType operationType, Double area,
-                    Integer bedrooms, Integer bathrooms, String description) {
+                    Integer bedrooms, Integer bathrooms, String description, List<PropertyImage> images) {
 
         // Business rules validations
         this.title = Objects.requireNonNull(title, "Property title cannot be null");
@@ -78,7 +81,6 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
         if(address.isBlank()) throw new IllegalArgumentException("Property address cannot be blank");
 
         this.propertyType = Objects.requireNonNull(propertyType, "Property type cannot be null");
-
         this.operationType = Objects.requireNonNull(operationType, "Operation type cannot be null");
 
         this.area = Objects.requireNonNull(area, "Property area cannot be null");
@@ -87,14 +89,45 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
         this.bedrooms = bedrooms;
         this.bathrooms = bathrooms;
 
-        this.description = Objects.requireNonNull(description, "Property description cannot be null");
-        if(description.isBlank()) throw new IllegalArgumentException("Property description cannot be blank");
+        // Creating an album
+        createAlbum(images);
 
         // Business rules for new properties
         this.statusType = EStatusType.AVAILABLE;
-        this.publishedAt = null;
+        this.publishedAt = LocalDateTime.now();
     }
 
+    public void createAlbum(List<PropertyImage> album) {
+        Objects.requireNonNull(album, "Images cannot be null");
+        if (album.isEmpty()) throw new IllegalArgumentException("Property must include at least one image");
 
+        validateAlbumRules(album);
+        this.images.clear();
+        album.forEach(this::addImage);
+    }
 
+    private void addImage(PropertyImage image) {
+        Objects.requireNonNull(image, "Image cannot be null");
+        image.setProperty(this);
+        this.images.add(image);
+    }
+
+    private void validateAlbumRules(List<PropertyImage> album) {
+        Set<Integer> orders = new HashSet<>();
+        long coverCount = 0;
+
+        for (PropertyImage image : album) {
+            if (!orders.add(image.getDisplayOrder())) {
+                throw new IllegalArgumentException("Display order must be unique per property");
+            }
+            if (image.isCover()) {
+                coverCount++;
+            }
+        }
+
+        // Business rule: Exactly one cover image must be present
+        if (coverCount != 1) {
+            throw new IllegalArgumentException("Album must contain exactly one cover image");
+        }
+    }
 }

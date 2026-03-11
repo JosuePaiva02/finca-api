@@ -3,6 +3,8 @@ package com.finca.api.properties.domain.model.commands;
 import com.finca.api.properties.domain.model.valueobjects.EOperationType;
 import com.finca.api.properties.domain.model.valueobjects.EPropertyType;
 
+import java.util.List;
+
 public record CreatePropertyCommand(
         String title,
         Double price,
@@ -13,6 +15,7 @@ public record CreatePropertyCommand(
         Double area,
         Integer bedrooms,
         Integer bathrooms,
-        String description
+        String description,
+        List <CreatePropertyImageCommand> images
 ) {
 }
