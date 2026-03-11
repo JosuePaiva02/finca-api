@@ -1,4 +1,8 @@
-package com.finca.api.properties.domain.model.commands;
+    package com.finca.api.properties.domain.model.commands;
 
-public record AddImageToAlbumCommand() {
-}
+    public record AddImageToAlbumCommand(
+            String fileName,
+            String filePath,
+            Integer displayOrder,
+            Boolean isCover
+    ) {}
