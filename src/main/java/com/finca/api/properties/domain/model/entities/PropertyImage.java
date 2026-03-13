@@ -60,4 +60,19 @@ public class PropertyImage extends AuditableModel {
     public void setProperty(Property property) {
         this.property = Objects.requireNonNull(property, "Property cannot be null");
     }
+
+    // Update method to modify image details; includes validations for non-null and non-blank fields, and non-negative display order
+    public void update(String fileName, String filePath, Integer displayOrder, boolean isCover) {
+        this.fileName     = Objects.requireNonNull(fileName, "File name cannot be null");
+        if (fileName.isBlank()) throw new IllegalArgumentException("File name cannot be blank");
+        this.filePath     = Objects.requireNonNull(filePath, "File path cannot be null");
+        if (filePath.isBlank()) throw new IllegalArgumentException("File path cannot be blank");
+        this.displayOrder = Objects.requireNonNull(displayOrder, "Display order cannot be null");
+        if (displayOrder < 0) throw new IllegalArgumentException("Display order cannot be negative");
+        this.cover        = isCover;
+    }
+
+    public void unsetCover() {
+        this.cover = false;
+    }
 }
