@@ -39,7 +39,9 @@ public record SearchedPropertiesQuery(
 
         //Built area filters
         Double minBuiltArea,
-        Double maxBuiltArea
+        Double maxBuiltArea,
 
+        //Sorting
+        ESorting sorting
 ) {
 }
