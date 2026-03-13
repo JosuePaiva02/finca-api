@@ -5,6 +5,7 @@ import com.finca.api.properties.domain.model.valueobjects.*;
 import com.finca.api.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -54,7 +55,7 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
     @Column(name = "bathrooms")
     private Integer bathrooms;
 
-    @Column(name = "parkings", nullable = false)
+    @Column(name = "parkings")
     private Integer parkings;
 
     @Column(name = "description", nullable = false, length = 1000)
