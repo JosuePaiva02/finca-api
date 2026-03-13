@@ -21,6 +21,7 @@ public record UpdatePropertyCommand(
         Integer parkings,
         String description,
         EStatusType statusType,
+        Boolean featured,
         List<AddImageToAlbumCommand> newImages,
         List<UpdateImageFromAlbumCommand> updatedImages,
         List<DeleteImageFromAlbumCommand> deletedImages

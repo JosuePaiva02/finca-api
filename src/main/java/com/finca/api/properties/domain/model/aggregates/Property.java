@@ -68,6 +68,9 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
     @Enumerated(EnumType.STRING)
     private EStatusType statusType;
 
+    @Column(name = "featured", nullable = false)
+    private boolean featured;
+
     @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
     private final List<PropertyImage> images = new ArrayList<>();
 
@@ -77,7 +80,7 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
     // Creation constructor with business rules validations
     public Property(String title, Double price, ECoin coin, EDepartments department, EDistricts district, String address,
                     EPropertyType propertyType, EOperationType operationType, Double totalArea, Double builtArea,
-                    Integer bedrooms, Integer bathrooms, Integer parkings, String description,
+                    Integer bedrooms, Integer bathrooms, Integer parkings, String description, boolean featured,
                     List<PropertyImage> images) {
 
         // Fields Validations
@@ -140,6 +143,9 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
         // Business rules for new properties
         this.statusType = EStatusType.AVAILABLE;
         this.publishedAt = LocalDateTime.now();
+
+        this.featured = Objects.requireNonNull(featured, "Property featured cannot be null");
+
     }
 
 
@@ -147,7 +153,7 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
     public void update(String title, Double price, ECoin coin, EDepartments department, EDistricts district,
                        String address, EPropertyType propertyType, EOperationType operationType,
                        Double totalArea, Double builtArea, Integer bedrooms, Integer bathrooms, Integer parkings,
-                       String description, EStatusType statusType) {
+                       String description, EStatusType statusType, boolean featured) {
 
         this.title = Objects.requireNonNull(title, "Title cannot be null");
         if(title.isBlank()) throw new IllegalArgumentException("Property title cannot be blank");
@@ -201,6 +207,9 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
         if(description.isBlank()) throw new IllegalArgumentException("Property description cannot be blank");
 
         this.statusType  = Objects.requireNonNull(statusType, "Status type cannot be null");
+
+        this.featured = Objects.requireNonNull(featured, "Property featured cannot be null");
+
     }
 
     // Photo Album Management

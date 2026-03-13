@@ -19,6 +19,7 @@ public record CreatePropertyCommand(
         Integer bathrooms,
         Integer parkings,
         String description,
+        Boolean featured,
         List <CreatePropertyImageCommand> images
 ) {
 }
