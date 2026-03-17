@@ -63,15 +63,13 @@ public class PropertyCommandServiceImpl implements PropertyCommandService {
             }
 
             if (command.updatedImages() != null) {
-                command.updatedImages().forEach(imgCmd -> {
-                    property.updateImageInAlbum(
-                            imgCmd.imageId(),
-                            imgCmd.fileName(),
-                            imgCmd.filePath(),
-                            imgCmd.displayOrder(),
-                            Boolean.TRUE.equals(imgCmd.isCover())
-                    );
-                });
+                command.updatedImages().forEach(imgCmd -> property.updateImageInAlbum(
+                        imgCmd.imageId(),
+                        imgCmd.fileName(),
+                        imgCmd.filePath(),
+                        imgCmd.displayOrder(),
+                        Boolean.TRUE.equals(imgCmd.isCover())
+                ));
             }
 
             if (command.newImages() != null) {
