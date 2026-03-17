@@ -6,7 +6,7 @@ import com.finca.api.properties.domain.model.valueobjects.*;
 import com.finca.api.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.sql.Update;
+
 
 import java.time.LocalDateTime;
 import java.util.*;
