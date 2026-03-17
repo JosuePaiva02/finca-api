@@ -144,8 +144,7 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
         this.statusType = EStatusType.AVAILABLE;
         this.publishedAt = LocalDateTime.now();
 
-        this.featured = Objects.requireNonNull(featured, "Property featured cannot be null");
-
+        this.featured = featured;
     }
 
 
@@ -208,8 +207,7 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
 
         this.statusType  = Objects.requireNonNull(statusType, "Status type cannot be null");
 
-        this.featured = Objects.requireNonNull(featured, "Property featured cannot be null");
-
+        this.featured = featured;
     }
 
     // Photo Album Management
@@ -224,6 +222,7 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
         if (image.isCover()) unsetCurrentCover();
         image.setProperty(this);
         this.images.add(image);
+        validateExactlyOneCover(this.images);
     }
 
     // Updating an existing image in the album; checks for unique display order and cover image rules
@@ -237,15 +236,17 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
                 "Display order " + displayOrder + " is already taken in this album");
         if (isCover) unsetCurrentCover();
         target.update(fileName, filePath, displayOrder, isCover);
+        validateExactlyOneCover(this.images);
     }
 
     // Removing an image from the album; checks that the cover image is not removed if other images exist
     public void removeImageFromAlbum(Long imageId) {
         PropertyImage target = findImageById(imageId);
-        if (target.isCover() && this.images.size() > 1)
-            throw new IllegalArgumentException(
-                    "Cannot remove the cover image while other images exist. Set a new cover first.");
+        if (this.images.size() == 1) {
+            throw new IllegalArgumentException("Property must have at least one image");
+        }
         this.images.remove(target);
+        validateExactlyOneCover(this.images);
     }
 
 
@@ -275,13 +276,21 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
 
     private void validateAlbumRules(List<PropertyImage> album) {
         Set<Integer> orders = new HashSet<>();
-        long coverCount = 0;
         for (PropertyImage image : album) {
             if (!orders.add(image.getDisplayOrder()))
                 throw new IllegalArgumentException("Display order must be unique per property");
-            if (image.isCover()) coverCount++;
         }
-        if (coverCount != 1)
-            throw new IllegalArgumentException("Album must contain exactly one cover image");
+        validateExactlyOneCover(album);
+        }
+
+    private void validateExactlyOneCover(Collection<PropertyImage> images) {
+        long coverCount = images.stream()
+                .filter(PropertyImage::isCover)
+                .count();
+
+        if (coverCount != 1) {
+            throw new IllegalStateException(
+                    "Property must always have exactly one cover image");
         }
     }
+}
