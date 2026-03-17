@@ -7,7 +7,7 @@
 
     import java.util.Optional;
 
-    public interface PropertiesCommandService {
+    public interface PropertyCommandService {
         Optional<Property> handle(CreatePropertyCommand command);
         Optional<Property> handle(UpdatePropertyCommand command);
         void handle(DeletePropertyCommand command);

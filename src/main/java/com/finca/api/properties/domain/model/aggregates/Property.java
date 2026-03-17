@@ -1,10 +1,12 @@
 package com.finca.api.properties.domain.model.aggregates;
 
+import com.finca.api.properties.domain.model.commands.UpdatePropertyCommand;
 import com.finca.api.properties.domain.model.entities.PropertyImage;
 import com.finca.api.properties.domain.model.valueobjects.*;
 import com.finca.api.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.sql.Update;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -149,67 +151,72 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
 
 
     // Property Update
-    public void update(String title, Double price, ECoin coin, EDepartments department, EDistricts district,
-                       String address, EPropertyType propertyType, EOperationType operationType,
-                       Double totalArea, Double builtArea, Integer bedrooms, Integer bathrooms, Integer parkings,
-                       String description, EStatusType statusType, boolean featured) {
+    public void updateProperty(UpdatePropertyCommand command) {
 
-        this.title = Objects.requireNonNull(title, "Title cannot be null");
-        if(title.isBlank()) throw new IllegalArgumentException("Property title cannot be blank");
+        // Validate all fields first before applying any changes to ensure atomicity of the update operation
+        String newTitle = Objects.requireNonNull(command.title(), "Title cannot be null");
+        if (newTitle.isBlank()) throw new IllegalArgumentException("Property title cannot be blank");
 
-        this.price = Objects.requireNonNull(price, "Price cannot be null");
-        if(price <= 0) throw new IllegalArgumentException("Property price must be greater than 0");
+        Double newPrice = Objects.requireNonNull(command.price(), "Price cannot be null");
+        if (newPrice <= 0) throw new IllegalArgumentException("Property price must be greater than 0");
 
-        this.coin = Objects.requireNonNull(coin, "Coin cannot be null");
+        ECoin newCoin = Objects.requireNonNull(command.coin(), "Coin cannot be null");
 
-        this.department = Objects.requireNonNull(department, "Department cannot be null");
+        EDepartments newDepartment = Objects.requireNonNull(command.department(), "Department cannot be null");
+        EDistricts newDistrict = command.district();
 
-        if (department == EDepartments.LIMA && district == null) {
+        // District is mandatory if department is Lima, and must be null for other departments
+        if (newDepartment == EDepartments.LIMA && newDistrict == null) {
             throw new IllegalArgumentException("District is required when department is Lima");
         }
 
-        if (department != EDepartments.LIMA && district != null) {
+        if (newDepartment != EDepartments.LIMA && newDistrict != null) {
             throw new IllegalArgumentException("District can only be set for Lima properties");
         }
 
-        this.district = district;
+        String newAddress = Objects.requireNonNull(command.address(), "Property address cannot be null");
+        if (newAddress.isBlank()) throw new IllegalArgumentException("Property address cannot be blank");
 
-        this.address = Objects.requireNonNull(address, "Property address cannot be null");
-        if(address.isBlank()) throw new IllegalArgumentException("Property address cannot be blank");
+        EPropertyType newPropertyType = Objects.requireNonNull(command.propertyType(), "Property type cannot be null");
+        EOperationType newOperationType = Objects.requireNonNull(command.operationType(), "Operation type cannot be null");
 
-        this.propertyType = Objects.requireNonNull(propertyType, "Property type cannot be null");
-        this.operationType = Objects.requireNonNull(operationType, "Operation type cannot be null");
+        Double newTotalArea = Objects.requireNonNull(command.totalArea(), "Property total area cannot be null");
+        if (newTotalArea <= 0) throw new IllegalArgumentException("Property total area must be greater than 0");
 
-        this.totalArea = Objects.requireNonNull(totalArea, "Property total area cannot be null");
-        if(totalArea <= 0) throw new IllegalArgumentException("Property total area must be greater than 0");
+        Double newBuiltArea = Objects.requireNonNull(command.builtArea(), "Property built area cannot be null");
+        if (newBuiltArea <= 0) throw new IllegalArgumentException("Property built area must be greater than 0");
 
-        this.builtArea = Objects.requireNonNull(builtArea, "Property built area cannot be null");
-        if(builtArea <= 0) throw new IllegalArgumentException("Property built area must be greater than 0");
-
-        if (builtArea > totalArea)
+        // Consistency: total area is always greater than built area
+        if (newBuiltArea > newTotalArea)
             throw new IllegalArgumentException("Built area cannot be greater than total area");
 
-        this.bedrooms = bedrooms;
-        this.bathrooms = bathrooms;
-        this.parkings = parkings;
+        Integer newBedrooms = command.bedrooms();
+        Integer newBathrooms = command.bathrooms();
+        Integer newParkings = command.parkings();
 
-        if (bedrooms != null && bedrooms < 0)
-            throw new IllegalArgumentException("Bedrooms cannot be negative");
+        String newDescription = Objects.requireNonNull(command.description(), "Property description cannot be null");
+        if (newDescription.isBlank()) throw new IllegalArgumentException("Property description cannot be blank");
 
-        if (bathrooms != null && bathrooms < 0)
-            throw new IllegalArgumentException("Bathrooms cannot be negative");
+        EStatusType newStatusType = Objects.requireNonNull(command.statusType(), "Status type cannot be null");
 
-        if (parkings != null && parkings < 0)
-            throw new IllegalArgumentException("Parkings cannot be negative");
-
-        this.description = Objects.requireNonNull(description, "Property description cannot be null");
-        if(description.isBlank()) throw new IllegalArgumentException("Property description cannot be blank");
-
-        this.statusType  = Objects.requireNonNull(statusType, "Status type cannot be null");
-
-        this.featured = featured;
+        // After all validations, update the property fields
+        this.title = newTitle;
+        this.price = newPrice;
+        this.coin = newCoin;
+        this.department = newDepartment;
+        this.district = newDistrict;
+        this.address = newAddress;
+        this.propertyType = newPropertyType;
+        this.operationType = newOperationType;
+        this.totalArea = newTotalArea;
+        this.builtArea = newBuiltArea;
+        this.bedrooms = newBedrooms;
+        this.bathrooms = newBathrooms;
+        this.parkings = newParkings;
+        this.description = newDescription;
+        this.statusType = newStatusType;
+        this.featured = command.featured();
     }
-
     // Photo Album Management
 
     // Adding a new image to the album; checks for unique display order and cover image rules
