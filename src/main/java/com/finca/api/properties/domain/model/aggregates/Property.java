@@ -19,12 +19,11 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
     @Column(name = "title", nullable = false, length = 100)
     private String title;
 
-    @Column(name = "price", nullable = false)
-    private Double price;
+    @Column(name = "price_dollars", nullable = false)
+    private Double priceDollars;
 
-    @Column(name = "coin", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private ECoin coin;
+    @Column(name = "price_soles")
+    private Double priceSoles;
 
     @Column(name = "department", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -80,19 +79,17 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
     protected Property() {}
 
     // Creation constructor with business rules validations
-    public Property(String title, Double price, ECoin coin, EDepartments department, EDistricts district, String address,
+    public Property(String title, Double priceDollars, EDepartments department, EDistricts district, String address,
                     EPropertyType propertyType, EOperationType operationType, Double totalArea, Double builtArea,
                     Integer bedrooms, Integer bathrooms, Integer parkings, String description, boolean featured,
-                    List<PropertyImage> images) {
+                    EStatusType statusType, List<PropertyImage> images) {
 
         // Fields Validations
         this.title = Objects.requireNonNull(title, "Title cannot be null");
         if(title.isBlank()) throw new IllegalArgumentException("Property title cannot be blank");
 
-        this.price = Objects.requireNonNull(price, "Price cannot be null");
-        if(price <= 0) throw new IllegalArgumentException("Property price must be greater than 0");
-
-        this.coin = Objects.requireNonNull(coin, "Coin cannot be null");
+        this.priceDollars = Objects.requireNonNull(priceDollars, "Price cannot be null");
+        if(priceDollars <= 0) throw new IllegalArgumentException("Property price must be greater than 0");
 
         this.department = Objects.requireNonNull(department, "Department cannot be null");
 
@@ -142,8 +139,9 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
 
         createAlbum(images);
 
+        this.statusType = Objects.requireNonNull(statusType, "Property status type cannot be null");
+
         // Business rules for new properties
-        this.statusType = EStatusType.AVAILABLE;
         this.publishedAt = LocalDateTime.now();
 
         this.featured = featured;
@@ -157,10 +155,8 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
         String newTitle = Objects.requireNonNull(command.title(), "Title cannot be null");
         if (newTitle.isBlank()) throw new IllegalArgumentException("Property title cannot be blank");
 
-        Double newPrice = Objects.requireNonNull(command.price(), "Price cannot be null");
-        if (newPrice <= 0) throw new IllegalArgumentException("Property price must be greater than 0");
-
-        ECoin newCoin = Objects.requireNonNull(command.coin(), "Coin cannot be null");
+        Double newPriceDollars = Objects.requireNonNull(command.price(), "Price cannot be null");
+        if (newPriceDollars <= 0) throw new IllegalArgumentException("Property price must be greater than 0");
 
         EDepartments newDepartment = Objects.requireNonNull(command.department(), "Department cannot be null");
         EDistricts newDistrict = command.district();
@@ -201,8 +197,7 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
 
         // After all validations, update the property fields
         this.title = newTitle;
-        this.price = newPrice;
-        this.coin = newCoin;
+        this.priceDollars = newPriceDollars;
         this.department = newDepartment;
         this.district = newDistrict;
         this.address = newAddress;

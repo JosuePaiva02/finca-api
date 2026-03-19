@@ -7,7 +7,6 @@ import java.util.List;
 public record CreatePropertyCommand(
         String title,
         Double price,
-        ECoin coin,
         EDepartments department,
         EDistricts district,
         String address,
@@ -30,9 +29,6 @@ public record CreatePropertyCommand(
             throw new IllegalArgumentException("Price must not be null");
         }
 
-        if (coin == null) {
-            throw new IllegalArgumentException("Coin must not be null");
-        }
         if (department == null) {
             throw new IllegalArgumentException("Department must not be null");
         }

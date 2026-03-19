@@ -8,9 +8,6 @@ public record SearchedPropertiesQuery(
         Double minPrice,
         Double maxPrice,
 
-        //Coin filter
-        ECoin coin,
-
         //Location filters
         EDepartments department,
         EDistricts district,
