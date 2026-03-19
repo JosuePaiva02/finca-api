@@ -1,7 +1,5 @@
 package com.finca.api.properties.domain.model.commands;
 
-import java.util.Objects;
-
 public record UpdateImageFromAlbumCommand(
         Long imageId,
         String fileName,

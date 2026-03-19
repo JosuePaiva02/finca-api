@@ -31,8 +31,8 @@ public class PropertyCommandServiceImpl implements PropertyCommandService {
 
         Property property = new Property(
                 command.title(),
-                command.price(),
-                command.coin(),
+                command.priceDollars(),
+                command.priceSoles(),
                 command.department(),
                 command.district(),
                 command.address(),
@@ -45,6 +45,9 @@ public class PropertyCommandServiceImpl implements PropertyCommandService {
                 command.parkings(),
                 command.description(),
                 command.featured(),
+                command.statusType(),
+                command.tags(),
+                command.documentationUrl(),
                 images
         );
         return Optional.of(propertyRepository.save(property));
@@ -53,36 +56,9 @@ public class PropertyCommandServiceImpl implements PropertyCommandService {
     @Override
     public Optional<Property> handle(UpdatePropertyCommand command) {
         var propertyId = command.propertyId();
+
         return propertyRepository.findById(propertyId).map(property -> {
             property.updateProperty(command);
-
-            if (command.deletedImages() != null) {
-                command.deletedImages().forEach(imgCmd ->
-                        property.removeImageFromAlbum(imgCmd.imageId())
-                );
-            }
-
-            if (command.updatedImages() != null) {
-                command.updatedImages().forEach(imgCmd -> property.updateImageInAlbum(
-                        imgCmd.imageId(),
-                        imgCmd.fileName(),
-                        imgCmd.filePath(),
-                        imgCmd.displayOrder(),
-                        Boolean.TRUE.equals(imgCmd.isCover())
-                ));
-            }
-
-            if (command.newImages() != null) {
-                command.newImages().forEach(imgCmd -> {
-                    var image = new PropertyImage(
-                            imgCmd.fileName(),
-                            imgCmd.filePath(),
-                            imgCmd.displayOrder(),
-                            imgCmd.isCover()
-                    );
-                    property.addImageToAlbum(image);
-                });
-            }
 
             return propertyRepository.save(property);
         });

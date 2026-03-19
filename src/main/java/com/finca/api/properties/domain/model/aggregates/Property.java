@@ -62,6 +62,9 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
     @Column(name = "description", nullable = false, length = 1000)
     private String description;
 
+    @Column(name = "documentation_url")
+    private String documentationUrl;
+
     @Column(name = "published_at")
     private LocalDateTime publishedAt;
 
@@ -69,8 +72,18 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
     @Enumerated(EnumType.STRING)
     private EStatusType statusType;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "property_tags",
+            joinColumns = @JoinColumn(name = "property_id")
+    )
+    @Column(name = "tag")
+    @Enumerated(EnumType.STRING)
+    private Set<ETags> tags = new HashSet<>();
+
     @Column(name = "featured", nullable = false)
     private boolean featured;
+
 
     @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
     private final List<PropertyImage> images = new ArrayList<>();
@@ -79,19 +92,26 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
     protected Property() {}
 
     // Creation constructor with business rules validations
-    public Property(String title, Double priceDollars, EDepartments department, EDistricts district, String address,
+    public Property(String title, Double priceDollars, Double priceSoles, EDepartments department, EDistricts district, String address,
                     EPropertyType propertyType, EOperationType operationType, Double totalArea, Double builtArea,
                     Integer bedrooms, Integer bathrooms, Integer parkings, String description, boolean featured,
-                    EStatusType statusType, List<PropertyImage> images) {
+                    EStatusType statusType, Set<ETags> tags, String documentationUrl, List<PropertyImage> images) {
 
         // Fields Validations
         this.title = Objects.requireNonNull(title, "Title cannot be null");
-        if(title.isBlank()) throw new IllegalArgumentException("Property title cannot be blank");
+        if (title.isBlank()) throw new IllegalArgumentException("Property title cannot be blank");
 
         this.priceDollars = Objects.requireNonNull(priceDollars, "Price cannot be null");
-        if(priceDollars <= 0) throw new IllegalArgumentException("Property price must be greater than 0");
+        if (priceDollars <= 0) throw new IllegalArgumentException("Property price in dollars must be greater than 0");
+
+        this.priceSoles = priceSoles;
+        if (priceSoles != null && priceSoles <= 0) {
+            throw new IllegalArgumentException("Property price in soles must be greater than 0");
+        }
 
         this.department = Objects.requireNonNull(department, "Department cannot be null");
+
+        this.district = district;
 
         // District is mandatory if department is Lima, and must be null for other departments
         if (department == EDepartments.LIMA && district == null) {
@@ -101,9 +121,6 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
         if (department != EDepartments.LIMA && district != null) {
             throw new IllegalArgumentException("District can only be set for Lima properties");
         }
-
-        this.district = district;
-
         this.address = Objects.requireNonNull(address, "Property address cannot be null");
         if(address.isBlank()) throw new IllegalArgumentException("Property address cannot be blank");
 
@@ -139,7 +156,14 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
 
         createAlbum(images);
 
+        this.documentationUrl = documentationUrl;
+
         this.statusType = Objects.requireNonNull(statusType, "Property status type cannot be null");
+
+        this.tags = new HashSet<>();
+        if (tags != null) {
+            tags.forEach(this::addTag);
+        }
 
         // Business rules for new properties
         this.publishedAt = LocalDateTime.now();
@@ -155,8 +179,13 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
         String newTitle = Objects.requireNonNull(command.title(), "Title cannot be null");
         if (newTitle.isBlank()) throw new IllegalArgumentException("Property title cannot be blank");
 
-        Double newPriceDollars = Objects.requireNonNull(command.price(), "Price cannot be null");
+        Double newPriceDollars = Objects.requireNonNull(command.priceDollars(), "Price cannot be null");
         if (newPriceDollars <= 0) throw new IllegalArgumentException("Property price must be greater than 0");
+
+        Double newPriceSoles = command.priceSoles();
+        if (newPriceSoles != null && newPriceSoles <= 0) {
+            throw new IllegalArgumentException("Property price in soles must be greater than 0");
+        }
 
         EDepartments newDepartment = Objects.requireNonNull(command.department(), "Department cannot be null");
         EDistricts newDistrict = command.district();
@@ -193,11 +222,14 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
         String newDescription = Objects.requireNonNull(command.description(), "Property description cannot be null");
         if (newDescription.isBlank()) throw new IllegalArgumentException("Property description cannot be blank");
 
+        String documentationUrl = command.documentationUrl();
+
         EStatusType newStatusType = Objects.requireNonNull(command.statusType(), "Status type cannot be null");
 
         // After all validations, update the property fields
         this.title = newTitle;
         this.priceDollars = newPriceDollars;
+        this.priceSoles = newPriceSoles;
         this.department = newDepartment;
         this.district = newDistrict;
         this.address = newAddress;
@@ -209,11 +241,37 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
         this.bathrooms = newBathrooms;
         this.parkings = newParkings;
         this.description = newDescription;
+        this.documentationUrl = documentationUrl;
         this.statusType = newStatusType;
         this.featured = command.featured();
+        updateTags(command.tags());
+        albumUpdate(command);
     }
-    // Photo Album Management
 
+    //Methods
+
+    // Tag Management
+    // Adding a new tag to the property; checks for duplicates
+    public void addTag(ETags tag) {
+        Objects.requireNonNull(tag, "Tag cannot be null");
+
+        boolean added = this.tags.add(tag);
+
+        if (!added) {
+            throw new IllegalArgumentException("El tag ya existe en la propiedad");
+        }
+    }
+
+    // Updating tags
+    public void updateTags(Set<ETags> newTags) {
+        this.tags.clear();
+
+        if (newTags != null) {
+            newTags.forEach(this::addTag);
+        }
+    }
+
+    // Photo Album Management
     // Adding a new image to the album; checks for unique display order and cover image rules
     public void addImageToAlbum(PropertyImage image) {
         Objects.requireNonNull(image, "Image cannot be null");
@@ -294,5 +352,30 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
             throw new IllegalStateException(
                     "Property must always have exactly one cover image");
         }
+    }
+
+    private void albumUpdate(UpdatePropertyCommand command) {
+        // DELETE
+        command.deletedImages().forEach(img ->
+                removeImageFromAlbum(img.imageId())
+        );
+        // UPDATE
+        command.updatedImages().forEach(img ->
+                updateImageInAlbum(
+                        img.imageId(),
+                        img.fileName(),
+                        img.filePath(),
+                        img.displayOrder(),
+                        Boolean.TRUE.equals(img.isCover())
+                ));
+        // ADD
+        command.newImages().forEach(img -> {
+            var image = new PropertyImage(
+                    img.fileName(),
+                    img.filePath(),
+                    img.displayOrder(),
+                    img.isCover());
+            addImageToAlbum(image);
+        });
     }
 }

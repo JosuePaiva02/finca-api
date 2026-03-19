@@ -3,11 +3,13 @@ package com.finca.api.properties.domain.model.commands;
 import com.finca.api.properties.domain.model.valueobjects.*;
 
 import java.util.List;
+import java.util.Set;
 
 public record UpdatePropertyCommand(
         Long propertyId,
         String title,
-        Double price,
+        Double priceDollars,
+        Double priceSoles,
         EDepartments department,
         EDistricts district,
         String address,
@@ -20,6 +22,8 @@ public record UpdatePropertyCommand(
         Integer parkings,
         String description,
         EStatusType statusType,
+        Set<ETags> tags,
+        String documentationUrl,
         boolean featured,
         List<AddImageToAlbumCommand> newImages,
         List<UpdateImageFromAlbumCommand> updatedImages,
@@ -36,7 +40,7 @@ public record UpdatePropertyCommand(
         if (title == null || title.isBlank()) {
             throw new IllegalArgumentException("Title must not be null or blank");
         }
-        if (price == null) {
+        if (priceDollars == null) {
             throw new IllegalArgumentException("Price must not be null");
         }
 
