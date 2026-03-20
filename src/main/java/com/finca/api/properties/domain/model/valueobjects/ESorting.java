@@ -1,8 +1,6 @@
     package com.finca.api.properties.domain.model.valueobjects;
 
     public enum ESorting {
-        ASC,
-        DESC,
-        NEWEST,
-        OLDEST
+        PRICE_ASC,
+        PRICE_DESC
     }

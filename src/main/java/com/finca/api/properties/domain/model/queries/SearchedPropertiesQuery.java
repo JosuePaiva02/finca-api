@@ -2,41 +2,52 @@ package com.finca.api.properties.domain.model.queries;
 
 import com.finca.api.properties.domain.model.valueobjects.*;
 
+import java.util.Set;
+
 public record SearchedPropertiesQuery(
 
-        //Price filters
-        Double minPrice,
-        Double maxPrice,
+        // Price filters
+        Double minPriceDollars,
+        Double maxPriceDollars,
 
-        //Location filters
+        Double minPriceSoles,
+        Double maxPriceSoles,
+
+        // Location filters
         EDepartments department,
         EDistricts district,
 
-        //Property type filter
+        // Property type filter
         EPropertyType propertyType,
 
-        //Operation type filter
+        // Operation type filter
         EOperationType operationType,
 
-        //Bedrooms filters
+        // Property status filter
+        EStatusType statusType,
+
+        // Bedrooms filters
         Integer minBedrooms,
         Integer maxBedrooms,
 
-        //Bathrooms filters
+        // Bathrooms filters
         Integer minBathrooms,
         Integer maxBathrooms,
 
-        //Parkings filters
+        // Parkings filters
         Integer minParkings,
         Integer maxParkings,
 
-        //Total area filters
+        // Total area filters
         Double minTotalArea,
         Double maxTotalArea,
 
-        //Built area filters
+        // Built area filters
         Double minBuiltArea,
         Double maxBuiltArea,
+
+        // Tags filter
+        Set<ETags> tags,
 
         //Sorting
         ESorting sorting
