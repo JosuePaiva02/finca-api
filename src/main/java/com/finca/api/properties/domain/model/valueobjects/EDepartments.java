@@ -1,29 +1,39 @@
 package com.finca.api.properties.domain.model.valueobjects;
 
 public enum EDepartments {
-    AMAZONAS,
-    ANCASH,
-    APURIMAC,
-    AREQUIPA,
-    AYACUCHO,
-    CAJAMARCA,
-    CALLAO,
-    CUSCO,
-    HUANCAVELICA,
-    HUANUCO,
-    ICA,
-    JUNIN,
-    LA_LIBERTAD,
-    LAMBAYEQUE,
-    LIMA,
-    LORETO,
-    MADRE_DE_DIOS,
-    MOQUEGUA,
-    PASCO,
-    PIURA,
-    PUNO,
-    SAN_MARTIN,
-    TACNA,
-    TUMBES,
-    UCAYALI
+    AMAZONAS("Amazonas"),
+    ANCASH("Áncash"),
+    APURIMAC("Apurímac"),
+    AREQUIPA("Arequipa"),
+    AYACUCHO("Ayacucho"),
+    CAJAMARCA("Cajamarca"),
+    CALLAO("Callao"),
+    CUSCO("Cusco"),
+    HUANCAVELICA("Huancavelica"),
+    HUANUCO("Huánuco"),
+    ICA("Ica"),
+    JUNIN("Junín"),
+    LA_LIBERTAD("La Libertad"),
+    LAMBAYEQUE("Lambayeque"),
+    LIMA("Lima"),
+    LORETO("Loreto"),
+    MADRE_DE_DIOS("Madre de Dios"),
+    MOQUEGUA("Moquegua"),
+    PASCO("Pasco"),
+    PIURA("Piura"),
+    PUNO("Puno"),
+    SAN_MARTIN("San Martín"),
+    TACNA("Tacna"),
+    TUMBES("Tumbes"),
+    UCAYALI("Ucayali");
+
+    private final String displayName;
+
+    EDepartments (String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
 }
