@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Set;
 
 public record UpdatePropertyResource(
-        Long propertyId,
         String title,
         Double priceDollars,
         Double priceSoles,
