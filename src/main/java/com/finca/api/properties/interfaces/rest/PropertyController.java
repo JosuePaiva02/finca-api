@@ -17,9 +17,11 @@ import com.finca.api.properties.interfaces.rest.transform.UpdatePropertyCommandF
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
 import java.util.List;
@@ -121,4 +123,7 @@ public class PropertyController {
         var response = PropertyResourceFromEntityAssembler.fromEntity(updatedProperty);
         return ResponseEntity.ok(response);
     }
+
+
+
 }

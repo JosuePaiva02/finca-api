@@ -72,4 +72,24 @@ public class PropertyCommandServiceImpl implements PropertyCommandService {
         }
         propertyRepository.deleteById(propertyId);
     }
+
+    @Override
+    public void addImage(Long propertyId, AddImageToAlbumCommand command) {
+
+        var property = propertyRepository.findById(propertyId)
+                .orElseThrow(() -> new RuntimeException("Property not found"));
+
+        // 👉 AQUÍ usas tu lógica ya existente
+        var image = new PropertyImage(
+                command.fileName(),
+                command.filePath(),
+                command.displayOrder(),
+                command.isCover()
+        );
+
+        property.addImageToAlbum(image);
+
+        propertyRepository.save(property);
+    }
+
 }

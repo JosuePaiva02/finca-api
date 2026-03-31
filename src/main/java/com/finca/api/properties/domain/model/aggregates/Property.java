@@ -377,7 +377,5 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
                     img.isCover());
             addImageToAlbum(image);
         });
-
-
     }
 }

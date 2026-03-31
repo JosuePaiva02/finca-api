@@ -4,5 +4,5 @@
             String fileName,
             String filePath,
             Integer displayOrder,
-            Boolean isCover
+            boolean isCover
     ) {}
