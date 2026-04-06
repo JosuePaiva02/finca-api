@@ -11,6 +11,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.*;
 
+
 @Getter
 @Entity
 @Table(name = "properties")
@@ -319,12 +320,7 @@ public class Property extends AuditableAbstractAggregateRoot<Property> {
         album.forEach(img -> { img.setProperty(this); this.images.add(img); });
     }
 
-    private void unsetCurrentCover() {
-        this.images.stream()
-                .filter(PropertyImage::isCover)
-                .findFirst()
-                .ifPresent(PropertyImage::unsetCover);
-    }
+    private void unsetCurrentCover() {this.images.forEach(PropertyImage::unsetCover);}
 
     private PropertyImage findImageById(Long imageId) {
         return this.images.stream()

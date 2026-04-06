@@ -42,7 +42,7 @@ public class PropertyImage extends AuditableModel {
     protected PropertyImage() {
     }
 
-    public PropertyImage(String fileName, String filePath, Integer displayOrder, Boolean isCover) {
+    public PropertyImage(String fileName, String filePath, Integer displayOrder, boolean cover) {
 
         // Fields Validations
         this.fileName = Objects.requireNonNull(fileName, "Property file name cannot be null");
@@ -52,9 +52,9 @@ public class PropertyImage extends AuditableModel {
         if(filePath.isBlank()) throw new IllegalArgumentException("Property file path cannot be blank");
 
         this.displayOrder = Objects.requireNonNull(displayOrder, "Property image display order cannot be null");
-        if(displayOrder < 0) throw new IllegalArgumentException("Property image display order cannot be negative");
+        if(displayOrder <= 0) throw new IllegalArgumentException("Property image display order cannot be negative");
 
-        this.cover = Boolean.TRUE.equals(isCover);
+        this.cover = cover;
     }
 
     public void setProperty(Property property) {
@@ -62,14 +62,14 @@ public class PropertyImage extends AuditableModel {
     }
 
     // Update method to modify image details; includes validations for non-null and non-blank fields, and non-negative display order
-    public void update(String fileName, String filePath, Integer displayOrder, boolean isCover) {
+    public void update(String fileName, String filePath, Integer displayOrder, boolean cover) {
         this.fileName     = Objects.requireNonNull(fileName, "File name cannot be null");
         if (fileName.isBlank()) throw new IllegalArgumentException("File name cannot be blank");
         this.filePath     = Objects.requireNonNull(filePath, "File path cannot be null");
         if (filePath.isBlank()) throw new IllegalArgumentException("File path cannot be blank");
         this.displayOrder = Objects.requireNonNull(displayOrder, "Display order cannot be null");
         if (displayOrder < 0) throw new IllegalArgumentException("Display order cannot be negative");
-        this.cover        = isCover;
+        this.cover        = cover;
     }
 
     public void unsetCover() {
