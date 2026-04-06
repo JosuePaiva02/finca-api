@@ -2,7 +2,13 @@ package com.finca.api;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+@EnableJpaAuditing
 @SpringBootApplication
 public class FincaApiApplication {
 
@@ -10,4 +16,18 @@ public class FincaApiApplication {
 		SpringApplication.run(FincaApiApplication.class, args);
 	}
 
+	@Configuration
+	public static class FincaApiConfiguration {
+		@Bean
+		public WebMvcConfigurer corsConfigurer() {
+			return new WebMvcConfigurer() {
+				@Override
+				public void addCorsMappings(CorsRegistry registry) {
+					registry.addMapping("/**")
+							.allowedMethods("HEAD", "GET", "PUT", "POST", "DELETE", "PATCH");
+				}
+			};
+
+		}
+	}
 }
