@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PropertyQueryService {
+        List<Property> handle(GetAllPropertiesQuery query);
         List<Property> handle(GetFeaturedPropertiesQuery query);
         Optional<Property> handle(GetPropertyByIdQuery query);
         List<Property> handle(SearchedPropertiesQuery query);

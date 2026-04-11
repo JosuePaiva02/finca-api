@@ -2,6 +2,7 @@ package com.finca.api.properties.interfaces.rest;
 
 import com.finca.api.properties.domain.model.commands.DeletePropertyCommand;
 import com.finca.api.properties.domain.model.commands.UpdatePropertyCommand;
+import com.finca.api.properties.domain.model.queries.GetAllPropertiesQuery;
 import com.finca.api.properties.domain.model.queries.GetFeaturedPropertiesQuery;
 import com.finca.api.properties.domain.model.queries.GetPropertyByIdQuery;
 import com.finca.api.properties.domain.model.queries.SearchedPropertiesQuery;
@@ -26,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.net.URI;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*", methods = { RequestMethod.POST, RequestMethod.GET, RequestMethod.PUT, RequestMethod.DELETE })
 @RestController
@@ -52,6 +54,19 @@ public class PropertyController {
     }
 
     // GET OPERATIONS
+
+    @GetMapping("")
+    @Operation(summary = "Get all Properties", description = "Retrieves a list of all Properties")
+    public ResponseEntity<List<PropertyResource>> getAllProperties() {
+        var getAllPropertiesQuery = new GetAllPropertiesQuery();
+        var properties = this.propertyQueryService.handle(getAllPropertiesQuery);
+
+        var resources = properties.stream()
+                .map(PropertyResourceFromEntityAssembler::fromEntity)
+                .toList();
+        return ResponseEntity.ok(resources);
+    }
+
     @GetMapping("/{id}")
     @Operation(summary = "Get a Property Entry by ID", description = "Reads a property data by its ID")
     public ResponseEntity<PropertyResource> getPropertyById(@PathVariable Long id) {

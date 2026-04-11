@@ -21,6 +21,11 @@ public class PropertyQueryServiceImpl implements PropertyQueryService {
     }
 
     @Override
+    public List<Property> handle(GetAllPropertiesQuery query) {
+        return propertyRepository.findAll();
+    }
+
+    @Override
     public List<Property> handle(GetFeaturedPropertiesQuery query) {
         return propertyRepository.findByFeaturedTrue();
     }
