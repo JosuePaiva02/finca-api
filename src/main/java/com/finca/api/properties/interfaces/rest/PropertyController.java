@@ -1,11 +1,9 @@
 package com.finca.api.properties.interfaces.rest;
 
+import com.finca.api.properties.domain.model.aggregates.Property;
 import com.finca.api.properties.domain.model.commands.DeletePropertyCommand;
 import com.finca.api.properties.domain.model.commands.UpdatePropertyCommand;
-import com.finca.api.properties.domain.model.queries.GetAllPropertiesQuery;
-import com.finca.api.properties.domain.model.queries.GetFeaturedPropertiesQuery;
-import com.finca.api.properties.domain.model.queries.GetPropertyByIdQuery;
-import com.finca.api.properties.domain.model.queries.SearchedPropertiesQuery;
+import com.finca.api.properties.domain.model.queries.*;
 import com.finca.api.properties.domain.model.valueobjects.*;
 import com.finca.api.properties.domain.services.PropertyCommandService;
 import com.finca.api.properties.domain.services.PropertyQueryService;
@@ -18,6 +16,7 @@ import com.finca.api.properties.interfaces.rest.transform.UpdatePropertyCommandF
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -56,15 +56,32 @@ public class PropertyController {
     // GET OPERATIONS
 
     @GetMapping("")
-    @Operation(summary = "Get all Properties", description = "Retrieves a list of all Properties")
-    public ResponseEntity<List<PropertyResource>> getAllProperties() {
-        var getAllPropertiesQuery = new GetAllPropertiesQuery();
-        var properties = this.propertyQueryService.handle(getAllPropertiesQuery);
+    @Operation(summary = "Get all Properties", description = "Retrieves a paged list of all Properties")
+    public ResponseEntity<?> getAllProperties(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "id,desc") String sort
+    ) {
+        var getPagedPropertiesQuery = new GetPagedPropertiesQuery(page, size, sort);
+        Page<Property> propertiesPage = this.propertyQueryService.handle(getPagedPropertiesQuery);
 
-        var resources = properties.stream()
+        var resources = propertiesPage.getContent().stream()
                 .map(PropertyResourceFromEntityAssembler::fromEntity)
                 .toList();
-        return ResponseEntity.ok(resources);
+
+        var responseBody = new HashMap<String, Object>();
+        responseBody.put("content", resources);
+        responseBody.put("page", propertiesPage.getNumber());
+        responseBody.put("size", propertiesPage.getSize());
+        responseBody.put("totalElements", propertiesPage.getTotalElements());
+        responseBody.put("totalPages", propertiesPage.getTotalPages());
+        responseBody.put("first", propertiesPage.isFirst());
+        responseBody.put("last", propertiesPage.isLast());
+        responseBody.put("hasNext", propertiesPage.hasNext());
+        responseBody.put("hasPrevious", propertiesPage.hasPrevious());
+        responseBody.put("sort", sort);
+
+        return ResponseEntity.ok(responseBody);
     }
 
     @GetMapping("/{id}")
@@ -100,12 +117,16 @@ public class PropertyController {
             @RequestParam(required = false) Integer minParkings, @RequestParam(required = false) Integer maxParkings,
             @RequestParam(required = false) Double minTotalArea, @RequestParam(required = false) Double maxTotalArea,
             @RequestParam(required = false) Double minBuiltArea, @RequestParam(required = false) Double maxBuiltArea,
-            @RequestParam(required = false) Set<ETags> tags, @RequestParam(required = false) ESorting sorting
+            @RequestParam(required = false) Set<ETags> tags, @RequestParam(required = false) ESorting sorting,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) String sort
     ) {
         var query = new SearchedPropertiesQuery(minPriceDollars, maxPriceDollars, minPriceSoles, maxPriceSoles,
                 department, district, propertyType, operationType, statusType,
                 minBedrooms, maxBedrooms, minBathrooms, maxBathrooms, minParkings, maxParkings,
-                minTotalArea, maxTotalArea, minBuiltArea, maxBuiltArea, tags, sorting
+                minTotalArea, maxTotalArea, minBuiltArea, maxBuiltArea, tags, sorting,
+                page, size, sort
         );
 
         var properties = this.propertyQueryService.handle(query);
@@ -138,7 +159,4 @@ public class PropertyController {
         var response = PropertyResourceFromEntityAssembler.fromEntity(updatedProperty);
         return ResponseEntity.ok(response);
     }
-
-
-
 }
