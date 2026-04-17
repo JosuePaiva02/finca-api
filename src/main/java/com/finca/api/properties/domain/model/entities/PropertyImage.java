@@ -68,7 +68,7 @@ public class PropertyImage extends AuditableModel {
         this.filePath     = Objects.requireNonNull(filePath, "File path cannot be null");
         if (filePath.isBlank()) throw new IllegalArgumentException("File path cannot be blank");
         this.displayOrder = Objects.requireNonNull(displayOrder, "Display order cannot be null");
-        if (displayOrder < 0) throw new IllegalArgumentException("Display order cannot be negative");
+        if (displayOrder <= 0) throw new IllegalArgumentException("Display order cannot be negative");
         this.cover        = cover;
     }
 

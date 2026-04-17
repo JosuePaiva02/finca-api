@@ -6,6 +6,10 @@ import com.finca.api.properties.domain.model.queries.*;
 import com.finca.api.properties.domain.model.valueobjects.EDepartments;
 import com.finca.api.properties.domain.services.PropertyQueryService;
 import com.finca.api.properties.infrastructure.persistence.jpa.repositories.PropertyRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +22,11 @@ public class PropertyQueryServiceImpl implements PropertyQueryService {
 
     public PropertyQueryServiceImpl(PropertyRepository propertyRepository) {
         this.propertyRepository = propertyRepository;
+    }
+
+    @Override
+    public List<Property> handle(GetAllPropertiesQuery query) {
+        return propertyRepository.findAll();
     }
 
     @Override
@@ -149,5 +158,26 @@ public class PropertyQueryServiceImpl implements PropertyQueryService {
             }
         }
         return result;
+    }
+
+    @Override
+    public Page<Property> handle(GetPagedPropertiesQuery query) {
+        int page = Math.max(query.page(), 0);
+        int size = query.size() <= 0 ? 20 : Math.min(query.size(), 50); // default 20, max 50
+
+        Sort sort = Sort.by("id").descending();
+        if (query.sort() != null && !query.sort().isBlank()) {
+            // expected format: field,direction  e.g. createdAt,desc
+            String[] parts = query.sort().split(",");
+            String field = parts[0];
+            Sort.Direction direction = Sort.Direction.DESC;
+            if (parts.length > 1) {
+                direction = Sort.Direction.fromOptionalString(parts[1]).orElse(Sort.Direction.DESC);
+            }
+            sort = Sort.by(direction, field);
+        }
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return propertyRepository.findAll(pageable);
     }
 }

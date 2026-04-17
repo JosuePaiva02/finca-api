@@ -49,7 +49,12 @@ public record SearchedPropertiesQuery(
         // Tags filter
         Set<ETags> tags,
 
-        //Sorting
-        ESorting sorting
+        // Sorting
+        ESorting sorting,
+
+        // Pagination
+        Integer page,
+        Integer size,
+        String sort
 ) {
 }
