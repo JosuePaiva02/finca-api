@@ -41,26 +41,26 @@ public class ImageController {
 
         List<ImageUploadResource> responses = files.stream().map(file -> {
 
-            // 1. Guardar archivo físico
+            // 1. Storing the file
             String filePath = fileStorageService.store(file);
 
-            // 2. Obtener nombre original
+            // 2. Getting the original filename or defaulting to "image"
             String fileName = file.getOriginalFilename() != null
                     ? file.getOriginalFilename()
                     : "image";
 
-            // 3. Crear comando de dominio (sin lógica pesada)
+            // 3. Create the command to add the image to the album (displayOrder and cover are set to defaults for now)
             var command = new AddImageToAlbumCommand(
                     fileName,
                     filePath,
-                    null,   // displayOrder lo decides luego en frontend o dominio
-                    false   // cover lo decides luego
+                    null,
+                    false
             );
 
-            // 4. Ejecutar comando
+            // 4. Execute the command to associate the image with the property
             propertyCommandService.addImage(propertyId, command);
 
-            // 5. Respuesta ligera para frontend
+            // 5. Return the response resource with the file metadata
             return new ImageUploadResource(fileName, filePath);
 
         }).toList();
