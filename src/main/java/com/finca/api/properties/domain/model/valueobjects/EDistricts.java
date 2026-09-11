@@ -17,6 +17,7 @@ public enum EDistricts {
     JESUS_MARIA("Jesus María"),
     LA_MOLINA("La Molina"),
     LA_VICTORIA("La Victoria"),
+    LINCE("Lince"),
     LURIGANCHO("Lurigancho"),
     LURIN("Lurín"),
     MAGDALENA_DEL_MAR("Magdalena del Mar"),
